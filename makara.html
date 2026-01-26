@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Makara - Kelime Oyunu</title>
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --secondary: #3498db;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .screen { display: none; flex-direction: column; height: 100%; }
+        .active { display: flex; }
+
+        h1 { text-align: center; color: var(--primary); margin-bottom: 10px; }
+        p { text-align: center; font-size: 0.9em; }
+
+        /* Kart Stilleri */
+        .card {
+            background: white;
+            color: var(--dark);
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            margin: 20px 0;
+            text-transform: uppercase;
+        }
+
+        /* Butonlar */
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s;
+            margin: 5px;
+        }
+
+        button:active { transform: scale(0.95); }
+        .btn-start { background: var(--primary); color: white; width: 100%; }
+        .btn-pass { background: var(--secondary); color: white; flex: 1; }
+        .btn-correct { background: var(--primary); color: white; flex: 2; }
+        .btn-action { background: var(--light); color: var(--dark); margin: 5px; }
+        .btn-discard { background: var(--danger); color: white; font-size: 0.8em; padding: 5px; }
+
+        /* Kelime Seçme Ekranı */
+        #word-selection-list {
+            overflow-y: auto;
+            flex-grow: 1;
+            margin: 10px 0;
+        }
+        .word-item {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 5px;
+        }
+
+        /* Skor ve Sayaç */
+        .header-info { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; }
+        .timer { color: var(--danger); font-size: 1.5rem; }
+        .scoreboard {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: auto;
+        }
+        .team-score { text-align: center; }
+        .team-1 { color: #3498db; }
+        .team-2 { color: #f1c40f; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    
+    <div id="screen-intro" class="screen active">
+        <h1>MAKARA</h1>
+        <p>4 Oyuncu | 2 Takım | Bol Kahkaha</p>
+        <button class="btn-start" onclick="initGame()">OYUNU BAŞLAT</button>
+        <div style="margin-top: 20px; font-size: 0.8em; opacity: 0.7; text-align: center;">
+            Her oyuncu 10 kelime alır, 3'ünü eler.<br>Kalan tüm kelimeler tek bir destede toplanır.
+        </div>
+    </div>
+
+    <div id="screen-selection" class="screen">
+        <h3 id="player-title">Oyuncu 1: Kelimelerini Seç</h3>
+        <p>Atmak istediğin 3 kelimeyi seç (Kalan: <span id="discard-count">3</span>)</p>
+        <div id="word-selection-list"></div>
+        <button id="btn-next-player" class="btn-start" style="display:none;" onclick="nextPlayerSelection()">SIRADAKİ OYUNCU</button>
+    </div>
+
+    <div id="screen-play" class="screen">
+        <div class="header-info">
+            <div id="current-player-display">Anlatıcı: P1</div>
+            <div class="timer" id="timer-display">01:00</div>
+        </div>
+        
+        <div id="ready-zone">
+            <button class="btn-start" style="height: 150px; font-size: 1.5rem;" onclick="startTurn()">TURU BAŞLAT</button>
+        </div>
+
+        <div id="play-zone" class="hidden">
+            <div class="card" id="current-word">KELİME</div>
+            <div style="display:flex;">
+                <button class="btn-pass" onclick="handlePass()">PAS</button>
+                <button class="btn-correct" onclick="handleCorrect()">BİLDİ!</button>
+            </div>
+        </div>
+
+        <div class="scoreboard">
+            <div class="team-score team-1">1. TAKIM<br><span id="score-1">0</span></div>
+            <div class="team-score team-2">2. TAKIM<br><span id="score-2">0</span></div>
+        </div>
+        <p id="deck-info" style="margin-top: 10px;">Destedeki Kelime: 0</p>
+    </div>
+
+    <div id="screen-result" class="screen">
+        <h1>OYUN BİTTİ!</h1>
+        <div class="card" id="winner-text" style="font-size: 1.5rem;"></div>
+        <button class="btn-start" onclick="location.reload()">YENİDEN OYNA</button>
+    </div>
+
+</div>
+
+<script>
+    // --- KELİME LİSTESİ (200+ Kelime) ---
+    const allWords = [
+        "Telefon", "Gözlük", "Klavye", "Kulaklık", "Şemsiye", "Buzdolabı", "Kaktüs", "Ayna", "Cüzdan", "Anahtar",
+        "Piyano", "Gitar", "Davul", "Keman", "Flüt", "Mikrofon", "Sahne", "Konser", "Albüm", "Şarkı",
+        "Aslan", "Zürafa", "Penguen", "Kaplumbağa", "Kartal", "Ahtapot", "Kelebek", "Arı", "Fil", "Kedi",
+        "Domates", "Patlıcan", "Karpuz", "Çilek", "Ananas", "Ispanak", "Bezelye", "Mantar", "Mısır", "Zeytin",
+        "İstanbul", "Ankara", "İzmir", "Paris", "Londra", "Roma", "Tokyo", "Berlin", "Moskova", "Madrid",
+        "Futbol", "Basketbol", "Voleybol", "Tenis", "Yüzme", "Koşu", "Kayak", "Satranç", "Boks", "Güreş",
+        "Mutluluk", "Hüzün", "Korku", "Öfke", "Şaşkınlık", "Heyecan", "Cesaret", "Sabır", "Saygı", "Sevgi",
+        "Doktor", "Mühendis", "Öğretmen", "Avukat", "Pilot", "Aşçı", "Bakkal", "Polis", "İtfaiye", "Yazar",
+        "Araba", "Gemi", "Uçak", "Bisiklet", "Motosiklet", "Tren", "Otobüs", "Kamyon", "Helikopter", "Fayton",
+        "Güneş", "Ay", "Yıldız", "Dünya", "Mars", "Venüs", "Galaksi", "Astronot", "Teleskop", "Uydu",
+        "Kitap", "Dergi", "Gazete", "Kütüphane", "Roman", "Şiir", "Masal", "Hikaye", "Sözlük", "Defter",
+        "Mavi", "Kırmızı", "Sarı", "Yeşil", "Turuncu", "Mor", "Pembe", "Siyah", "Beyaz", "Gri",
+        "Ekmek", "Peynir", "Yumurta", "Süt", "Kahve", "Çay", "Çikolata", "Balık", "Kebap", "Mantı",
+        "Okul", "Hastane", "Park", "Sinema", "Tiyatro", "Müze", "Market", "Eczane", "Banka", "Postane",
+        "Yaz", "Kış", "İlkbahar", "Sonbahar", "Yağmur", "Kar", "Rüzgar", "Şimşek", "Bulut", "Fırtına",
+        "Bilgisayar", "İnternet", "Yazılım", "Robot", "Kamera", "Televizyon", "Radyo", "Saat", "Lamba", "Pil",
+        "Yastık", "Battaniye", "Yorgan", "Halı", "Perde", "Koltuk", "Masa", "Sandalye", "Dolap", "Çekmece",
+        "Diş Fırçası", "Sabun", "Şampuan", "Havlu", "Tarak", "Parfüm", "Krem", "Ruj", "Oje", "Ayna",
+        "Çekiç", "Tornavida", "Pense", "Testere", "Matkap", "Boyalar", "Fırça", "Tuval", "Heykel", "Sergi",
+        "Bayram", "Düğün", "Doğum Günü", "Hediye", "Pasta", "Balon", "Havai Fişek", "Tatil", "Yolculuk", "Bilet"
+    ];
+
+    // --- OYUN DEĞİŞKENLERİ ---
+    let players = [[], [], [], []];
+    let discardedCount = [0, 0, 0, 0];
+    let mainDeck = [];
+    let currentWordIndex = 0;
+    let scores = [0, 0]; // Takım 1, Takım 2
+    let currentPlayerIndex = 0; // 0,1,2,3
+    let currentPlayerSelectionIndex = 0;
+    let timer;
+    let timeLeft = 60;
+
+    // --- OYUN MANTIĞI ---
+
+    function initGame() {
+        // Kelimeleri karıştır ve dağıt
+        const shuffled = allWords.sort(() => 0.5 - Math.random());
+        for(let i=0; i<4; i++) {
+            players[i] = shuffled.slice(i*10, (i+1)*10);
+        }
+        showScreen('screen-selection');
+        renderSelection();
+    }
+
+    function renderSelection() {
+        const listDiv = document.getElementById('word-selection-list');
+        const countSpan = document.getElementById('discard-count');
+        const title = document.getElementById('player-title');
+        const nextBtn = document.getElementById('btn-next-player');
+        
+        listDiv.innerHTML = '';
+        title.innerText = `Oyuncu ${currentPlayerSelectionIndex + 1}: Kelimelerini Seç`;
+        countSpan.innerText = 3 - discardedCount[currentPlayerSelectionIndex];
+        
+        if (discardedCount[currentPlayerSelectionIndex] === 3) {
+            nextBtn.style.display = 'block';
+        } else {
+            nextBtn.style.display = 'none';
+        }
+
+        players[currentPlayerSelectionIndex].forEach((word, idx) => {
+            const item = document.createElement('div');
+            item.className = 'word-item';
+            item.innerHTML = `
+                <span>${word}</span>
+                <button class="btn-discard" onclick="discardWord(${idx})">ELE</button>
+            `;
+            listDiv.appendChild(item);
+        });
+    }
+
+    function discardWord(wordIdx) {
+        if (discardedCount[currentPlayerSelectionIndex] < 3) {
+            const removed = players[currentPlayerSelectionIndex].splice(wordIdx, 1)[0];
+            mainDeck.push(removed); // Elenenler ortak desteye
+            discardedCount[currentPlayerSelectionIndex]++;
+            renderSelection();
+        }
+    }
+
+    function nextPlayerSelection() {
+        if (currentPlayerSelectionIndex < 3) {
+            currentPlayerSelectionIndex++;
+            renderSelection();
+        } else {
+            // Tüm oyuncular seçti, kalan kelimeleri desteye ekle ve karıştır
+            players.forEach(pWords => {
+                mainDeck = mainDeck.concat(pWords);
+            });
+            mainDeck = mainDeck.sort(() => 0.5 - Math.random());
+            startPlayPhase();
+        }
+    }
+
+    function startPlayPhase() {
+        showScreen('screen-play');
+        updateUI();
+    }
+
+    function updateUI() {
+        document.getElementById('score-1').innerText = scores[0];
+        document.getElementById('score-2').innerText = scores[1];
+        document.getElementById('deck-info').innerText = `Destedeki Kelime: ${mainDeck.length}`;
+        document.getElementById('current-player-display').innerText = `Anlatıcı: P${currentPlayerIndex + 1} (T${(currentPlayerIndex % 2) + 1})`;
+    }
+
+    function startTurn() {
+        if (mainDeck.length === 0) return;
+        
+        timeLeft = 60;
+        document.getElementById('ready-zone').classList.add('hidden');
+        document.getElementById('play-zone').classList.remove('hidden');
+        showNextWord();
+
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer-display').innerText = `00:${timeLeft < 10 ? '0'+timeLeft : timeLeft}`;
+            if (timeLeft <= 0) endTurn();
+        }, 1000);
+    }
+
+    function showNextWord() {
+        if (mainDeck.length === 0) {
+            endGame();
+            return;
+        }
+        document.getElementById('current-word').innerText = mainDeck[0];
+    }
+
+    function handleCorrect() {
+        const teamIdx = currentPlayerIndex % 2;
+        scores[teamIdx]++;
+        mainDeck.shift(); // Kelimeyi desteden çıkar
+        updateUI();
+        showNextWord();
+    }
+
+    function handlePass() {
+        const word = mainDeck.shift();
+        mainDeck.push(word); // Kelimeyi sona at
+        showNextWord();
+    }
+
+    function endTurn() {
+        clearInterval(timer);
+        alert("Süre Doldu!");
+        document.getElementById('timer-display').innerText = "01:00";
+        document.getElementById('ready-zone').classList.remove('hidden');
+        document.getElementById('play-zone').classList.add('hidden');
+        
+        currentPlayerIndex = (currentPlayerIndex + 1) % 4;
+        updateUI();
+    }
+
+    function endGame() {
+        clearInterval(timer);
+        showScreen('screen-result');
+        const winner = scores[0] > scores[1] ? "1. TAKIM KAZANDI!" : (scores[1] > scores[0] ? "2. TAKIM KAZANDI!" : "BERABERE!");
+        document.getElementById('winner-text').innerHTML = `${winner}<br><br>Skor: ${scores[0]} - ${scores[1]}`;
+    }
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+</script>
+
+</body>
+</html>
