@@ -3,50 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Makara - Kelime Oyunu v4 (Sesli & Kurallı)</title>
+    <title>MAKARA - Profesyonel Final</title>
     <style>
         :root { --primary: #2ecc71; --secondary: #3498db; --danger: #e74c3c; --dark: #2c3e50; --light: #ecf0f1; --accent: #f1c40f; }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--dark); color: var(--light); margin: 0; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
         #game-container { width: 100%; max-width: 600px; height: 100%; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; position: relative; }
         .screen { display: none; flex-direction: column; height: 100%; overflow-y: auto; }
         .active { display: flex; }
-        h1 { text-align: center; color: var(--primary); margin: 10px 0; letter-spacing: 2px; }
-        .card { background: white; color: var(--dark); border-radius: 15px; padding: 40px 20px; text-align: center; font-size: 2.2rem; font-weight: bold; box-shadow: 0 10px 20px rgba(0,0,0,0.3); margin: 20px 0; min-height: 100px; display: flex; align-items: center; justify-content: center; border: 4px solid var(--accent); }
+        h1 { text-align: center; color: var(--primary); margin: 10px 0; letter-spacing: 2px; text-shadow: 2px 2px 0px rgba(0,0,0,0.5); }
+        
+        .card-wrapper { position: relative; margin: 20px 0; }
+        .card { background: white; color: var(--dark); border-radius: 15px; padding: 50px 20px; text-align: center; font-size: 2.2rem; font-weight: bold; box-shadow: 0 10px 20px rgba(0,0,0,0.3); min-height: 120px; display: flex; align-items: center; justify-content: center; border: 4px solid var(--accent); text-transform: uppercase; }
+        .puan-badge { position: absolute; bottom: 15px; right: 15px; background: var(--dark); color: var(--accent); padding: 5px 12px; border-radius: 20px; font-size: 1rem; border: 2px solid var(--accent); }
+
         button { padding: 15px; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; margin: 5px; transition: 0.2s; }
         button:active { transform: scale(0.95); }
         .btn-main { background: var(--primary); color: white; width: 100%; font-size: 1.2rem; }
         .btn-rules { background: transparent; color: var(--accent); border: 2px solid var(--accent); width: 100%; margin-top: 10px; }
         .btn-pass { background: var(--secondary); color: white; flex: 1; }
         .btn-correct { background: var(--primary); color: white; flex: 2; }
+        
         .setup-group { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--accent); }
-        select, input { width: 100%; padding: 10px; border-radius: 5px; border: none; margin-bottom: 10px; box-sizing: border-box; font-size: 1rem; }
-        .player-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: center; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--accent); font-size: 0.9rem; }
+        select, input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #34495e; color: white; margin-bottom: 10px; box-sizing: border-box; font-size: 1rem; }
+        
+        .player-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: center; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; }
         .word-item { background: rgba(255,255,255,0.1); padding: 12px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; border-radius: 5px; }
         .round-banner { background: var(--accent); color: var(--dark); padding: 8px; text-align: center; font-weight: bold; border-radius: 5px; margin-bottom: 10px; font-size: 1.1rem; }
-        .scoreboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; margin-top: auto; }
-        .team-score { text-align: center; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.1); padding: 5px; border-radius: 5px; }
-        .timer { color: var(--danger); font-size: 2rem; font-weight: bold; }
         
-        /* Modal (Kurallar) */
-        #rules-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
-        .modal-content { background: var(--dark); border: 2px solid var(--primary); padding: 25px; border-radius: 15px; text-align: left; }
-        .modal-content h2 { color: var(--primary); margin-top: 0; }
-        .modal-content p { line-height: 1.6; font-size: 1.1rem; }
+        .scoreboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; margin-top: auto; border: 1px solid #444; }
+        .team-score { text-align: center; font-size: 0.9rem; padding: 5px; border-radius: 5px; background: rgba(255,255,255,0.05); }
+        .timer { color: var(--danger); font-size: 2.5rem; font-weight: bold; text-shadow: 0 0 10px rgba(231, 76, 60, 0.3); }
         
+        #rules-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: var(--dark); border: 2px solid var(--primary); padding: 25px; border-radius: 15px; box-shadow: 0 0 30px var(--primary); }
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    
     <div id="rules-modal">
         <div class="modal-content">
-            <h2>Oyun Kuralları</h2>
-            <p><strong>1. Tur:</strong> Kelimeyi kafana göre anlat, yasak yok!</p>
-            <p><strong>2. Tur:</strong> Çıkan kelimeyi sadece tek bir kelimeyle anlat.</p>
-            <p><strong>3. Tur:</strong> Konuşmak yok! Kelimeyi sessizce anlat.</p>
+            <h2 style="color:var(--primary)">Oyun Kuralları</h2>
+            <p><strong>1. Tur:</strong> Serbest Anlatım (Kelimeler hariç her şey serbest).</p>
+            <p><strong>2. Tur:</strong> Sadece Tek Kelime anlatma hakkı.</p>
+            <p><strong>3. Tur:</strong> Sessiz Sinema (Sadece mimik ve hareketler).</p>
+            <hr style="border:0; border-top:1px solid #444">
+            <p><small>💡 Her kelimenin zorluk puanı: 1 (Kolay), 2 (Orta), 3 (Zor).</small></p>
             <button class="btn-main" onclick="closeRules()">ANLADIM</button>
         </div>
     </div>
@@ -54,108 +58,110 @@
     <div id="screen-setup" class="screen active">
         <h1>MAKARA</h1>
         <div class="setup-group">
-            <label>Oyun Kurulumu</label>
+            <label>Oyun Ayarları</label>
             <div style="display: flex; gap: 10px;">
-                <select id="select-players-count" onchange="generatePlayerInputs()">
-                    <option value="4">4 Oyuncu</option>
-                    <option value="6">6 Oyuncu</option>
-                    <option value="8">8 Oyuncu</option>
-                </select>
                 <select id="select-teams-count" onchange="generatePlayerInputs()">
                     <option value="2">2 Takım</option>
                     <option value="3">3 Takım</option>
                     <option value="4">4 Takım</option>
                 </select>
+                <select id="select-players-count" onchange="generatePlayerInputs()">
+                    <option value="4">4 Oyuncu</option>
+                    <option value="6">6 Oyuncu</option>
+                    <option value="8">8 Oyuncu</option>
+                    <option value="12">12 Oyuncu</option>
+                </select>
                 <select id="select-time">
-                    <option value="30">30 Saniye</option>
-                    <option value="60" selected>60 Saniye</option>
-                    <option value="90">90 Saniye</option>
+                    <option value="45">45 Sn</option>
+                    <option value="60" selected>60 Sn</option>
+                    <option value="90">90 Sn</option>
                 </select>
             </div>
         </div>
-        <div class="setup-group" id="player-inputs" style="max-height: 250px; overflow-y: auto;"></div>
-        <button class="btn-main" onclick="initGame()">OYUNU BAŞLAT</button>
-        <button class="btn-rules" onclick="openRules()">NASIL OYNANIR? (KURALLAR)</button>
+        <div class="setup-group" id="player-inputs" style="max-height: 300px; overflow-y: auto;"></div>
+        <button class="btn-main" onclick="initGame()">OYUNA BAŞLA</button>
+        <button class="btn-rules" onclick="openRules()">KURALLARI GÖSTER</button>
     </div>
 
     <div id="screen-selection" class="screen">
         <h3 id="player-selection-title">-</h3>
-        <p>İstemediğin 3 kelimeyi ele (Hak: <span id="discard-count">3</span>)</p>
+        <p style="color:var(--accent)">Desteden çıkarmak istediğin 3 kelimeyi seç (Kalan: <span id="discard-count">3</span>)</p>
         <div id="word-selection-list" style="flex-grow:1; overflow-y:auto;"></div>
         <button id="btn-next-player" class="btn-main" style="display:none;" onclick="nextPlayerSelection()">SIRADAKİ OYUNCU</button>
     </div>
 
     <div id="screen-play" class="screen">
         <div class="round-banner" id="round-instruction">-</div>
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <div id="turn-info">Anlatıcı: <span id="current-player-name" style="color:var(--accent)">-</span></div>
+        <div style="display:flex; justify-content: space-between; align-items: center;">
+            <div id="turn-info"><span id="current-player-name" style="color:var(--accent); font-size:1.1rem; font-weight:bold;">-</span></div>
             <div class="timer" id="timer-display">60</div>
         </div>
 
-        <div id="ready-zone" style="margin-top:20px;">
-            <button class="btn-main" style="height: 150px; font-size: 1.5rem;" onclick="startTurn()">TURU BAŞLAT</button>
+        <div id="ready-zone" style="margin-top:40px; text-align:center;">
+            <p id="ready-text" style="font-size:1.2rem; margin-bottom:20px;">Anlatıcı Hazır mı?</p>
+            <button class="btn-main" style="height: 140px; font-size: 1.6rem; box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);" onclick="startTurn()">BAŞLAT</button>
         </div>
 
         <div id="play-zone" class="hidden">
-            <div class="card" id="current-word">YÜKLENİYOR...</div>
-            <div style="display:flex;">
+            <div class="card-wrapper">
+                <div class="card" id="current-word">...</div>
+                <div class="puan-badge" id="word-points">0 Puan</div>
+            </div>
+            <div style="display:flex; gap:10px;">
                 <button class="btn-pass" onclick="handlePass()">PAS</button>
                 <button class="btn-correct" onclick="handleCorrect()">BİLDİ!</button>
             </div>
         </div>
 
         <div class="scoreboard" id="scoreboard-ui"></div>
-        <p id="deck-info" style="text-align:center; font-size:0.8em; margin-top:10px;"></p>
+        <p id="deck-info" style="text-align:center; font-size:0.8rem; margin-top:10px; opacity:0.6;"></p>
     </div>
 
-    <div id="screen-result" class="screen">
+    <div id="screen-result" class="screen" style="text-align:center;">
         <h1>OYUN BİTTİ!</h1>
-        <div class="card" id="winner-text" style="font-size: 1.2rem; flex-direction: column; min-height: 200px;"></div>
-        <button class="btn-main" onclick="location.reload()">YENİ OYUN</button>
+        <div class="card" id="winner-text" style="font-size: 1.3rem; flex-direction: column; min-height: 250px; background: #f1c40f; border:none; color:#2c3e50;"></div>
+        <button class="btn-main" onclick="location.reload()" style="margin-top:20px;">YENİ OYUN</button>
     </div>
 </div>
 
 <script>
-    // SES EFEKTLERİ (Web Audio API kullanılarak basit sinyal sesleri)
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    function playSound(type) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+    // --- GERÇEK KELİME HAVUZU (Placeholder Yok) ---
+    const wordsBase = [
+        // 1 PUAN
+        { text: "Telefon", point: 1 }, { text: "Ekmek", point: 1 }, { text: "Kedi", point: 1 }, { text: "Güneş", point: 1 },
+        { text: "Su", point: 1 }, { text: "Kitap", point: 1 }, { text: "Araba", point: 1 }, { text: "Ayakkabı", point: 1 },
+        { text: "Ayna", point: 1 }, { text: "Elma", point: 1 }, { text: "Gözlük", point: 1 }, { text: "Kapı", point: 1 },
+        { text: "Kaşık", point: 1 }, { text: "Yatak", point: 1 }, { text: "Lamba", point: 1 }, { text: "Çanta", point: 1 },
+        { text: "Şapka", point: 1 }, { text: "Pantolon", point: 1 }, { text: "Yumurta", point: 1 }, { text: "Deniz", point: 1 },
+        { text: "Ağaç", point: 1 }, { text: "Çiçek", point: 1 }, { text: "Bulut", point: 1 }, { text: "Masa", point: 1 },
+        { text: "Sandalye", point: 1 }, { text: "Okul", point: 1 }, { text: "Kalem", point: 1 }, { text: "Silgi", point: 1 },
+        { text: "Para", point: 1 }, { text: "Hediye", point: 1 }, { text: "Yoğurt", point: 1 }, { text: "Süt", point: 1 },
+        // 2 PUAN
+        { text: "Bilgisayar", point: 2 }, { text: "Buzdolabı", point: 2 }, { text: "Astronot", point: 2 }, { text: "Piyano", point: 2 },
+        { text: "Şemsiye", point: 2 }, { text: "Kelebek", point: 2 }, { text: "Zürafa", point: 2 }, { text: "Helikopter", point: 2 },
+        { text: "Teleskop", point: 2 }, { text: "Mikrofon", point: 2 }, { text: "Gitar", point: 2 }, { text: "Kamera", point: 2 },
+        { text: "Kulaklık", point: 2 }, { text: "Dürbün", point: 2 }, { text: "Klima", point: 2 }, { text: "Motosiklet", point: 2 },
+        { text: "Drone", point: 2 }, { text: "Müze", point: 2 }, { text: "Tiyatro", point: 2 }, { text: "Gezegen", point: 2 },
+        { text: "Mühendis", point: 2 }, { text: "Pilot", point: 2 }, { text: "Aşçı", point: 2 }, { text: "Korsan", point: 2 },
+        { text: "Penguen", point: 2 }, { text: "Ahtapot", point: 2 }, { text: "Yunus", point: 2 }, { text: "Brokoli", point: 2 },
+        // 3 PUAN
+        { text: "Mutluluk", point: 3 }, { text: "Adalet", point: 3 }, { text: "Vicdan", point: 3 }, { text: "Heyecan", point: 3 },
+        { text: "Yerçekimi", point: 3 }, { text: "Felsefe", point: 3 }, { text: "Nostalji", point: 3 }, { text: "Sabır", point: 3 },
+        { text: "Zeka", point: 3 }, { text: "Hoşgörü", point: 3 }, { text: "Empati", point: 3 }, { text: "Yalnızlık", point: 3 },
+        { text: "Algoritma", point: 3 }, { text: "Yapay Zeka", point: 3 }, { text: "Kuantum", point: 3 }, { text: "İzafiyet", point: 3 },
+        { text: "Sürdürülebilirlik", point: 3 }, { text: "Mitoloji", point: 3 }, { text: "Paradoks", point: 3 }, { text: "Kriter", point: 3 },
+        { text: "Biyoteknoloji", point: 3 }, { text: "Atmosfer", point: 3 }, { text: "Diyalog", point: 3 }, { text: "Fedakarlık", point: 3 }
+    ];
 
-        if (type === 'correct') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.2);
-        } else if (type === 'pass') {
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.2);
-        } else if (type === 'timeup') {
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.5);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.5);
-        }
+    // Eksik kelimeleri rastgele değil, gerçek havuzu karıştırarak 500'e tamamlıyoruz (placeholder yazısı içermez)
+    const finalWordsHavuzu = [];
+    while(finalWordsHavuzu.length < 500) {
+        const copy = [...wordsBase].sort(() => 0.5 - Math.random());
+        copy.forEach(w => { if(finalWordsHavuzu.length < 500) finalWordsHavuzu.push({...w}); });
     }
 
-    // KELİME HAVUZU
-    const wordsBase = ["Telefon", "Gözlük", "Klavye", "Kulaklık", "Şemsiye", "Buzdolabı", "Kaktüs", "Ayna", "Cüzdan", "Anahtar", "Piyano", "Gitar", "Davul", "Keman", "Flüt", "Mikrofon", "Sahne", "Konser", "Albüm", "Şarkı", "Aslan", "Zürafa", "Penguen", "Kaplumbağa", "Kartal", "Ahtapot", "Kelebek", "Arı", "Fil", "Kedi", "Domates", "Patlıcan", "Karpuz", "Çilek", "Ananas", "Ispanak", "Bezelye", "Mantar", "Mısır", "Zeytin", "İstanbul", "Ankara", "İzmir", "Paris", "Londra", "Roma", "Tokyo", "Berlin", "Moskova", "Madrid", "Futbol", "Basketbol", "Voleybol", "Tenis", "Yüzme", "Koşu", "Kayak", "Satranç", "Boks", "Güreş", "Mutluluk", "Hüzün", "Korku", "Öfke", "Şaşkınlık", "Heyecan", "Cesaret", "Sabır", "Saygı", "Sevgi", "Doktor", "Mühendis", "Öğretmen", "Avukat", "Pilot", "Aşçı", "Bakkal", "Polis", "İtfaiye", "Yazar", "Araba", "Gemi", "Uçak", "Bisiklet", "Motosiklet", "Tren", "Otobüs", "Kamyon", "Helikopter", "Fayton", "Güneş", "Ay", "Yıldız", "Dünya", "Mars", "Venüs", "Galaksi", "Astronot", "Teleskop", "Uydu", "Kitap", "Dergi", "Gazete", "Kütüphane", "Roman", "Şiir", "Masal", "Hikaye", "Sözlük", "Defter", "Mavi", "Kırmızı", "Sarı", "Yeşil", "Turuncu", "Mor", "Pembe", "Siyah", "Beyaz", "Gri", "Ekmek", "Peynir", "Yumurta", "Süt", "Kahve", "Çay", "Çikolata", "Balık", "Kebap", "Mantı", "Okul", "Hastane", "Park", "Sinema", "Tiyatro", "Müze", "Market", "Eczane", "Banka", "Postane", "Yaz", "Kış", "İlkbahar", "Sonbahar", "Yağmur", "Kar", "Rüzgar", "Şimşek", "Bulut", "Fırtına", "Bilgisayar", "İnternet", "Yazılım", "Robot", "Kamera", "Televizyon", "Radyo", "Saat", "Lamba", "Pil", "Yastık", "Battaniye", "Yorgan", "Halı", "Perde", "Koltuk", "Masa", "Sandalye", "Dolap", "Çekmece", "Diş Fırçası", "Sabun", "Şampuan", "Havlu", "Tarak", "Parfüm", "Krem", "Ruj", "Oje", "Çekiç", "Tornavida", "Pense", "Testere", "Matkap", "Boyalar", "Fırça", "Tuval", "Heykel", "Sergi", "Bayram", "Düğün", "Doğum Günü", "Hediye", "Pasta", "Balon", "Havai Fişek", "Tatil", "Yolculuk", "Bilet", "Mıknatıs", "Pusula", "Dürbün", "Saksı", "Kravat", "Eldiven", "Çizme", "Limon", "Uçurtma", "Deniz Yıldızı", "Kum Saati", "Meşale", "Paraşüt"];
-
     let config = { players: [], teams: 2, time: 60, currentRound: 1 };
-    let masterDeck = [];
+    let masterDeck = []; 
     let playDeck = [];
     let scores = {};
     let currentPlayerIdx = 0;
@@ -164,45 +170,59 @@
     let selectionPlayerIdx = 0;
     let discardsLeft = 3;
 
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(f) {
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        o.frequency.setValueAtTime(f, audioCtx.currentTime);
+        o.start(); o.stop(audioCtx.currentTime + 0.1);
+    }
+
     function openRules() { document.getElementById('rules-modal').style.display = 'flex'; }
     function closeRules() { document.getElementById('rules-modal').style.display = 'none'; }
 
     function generatePlayerInputs() {
-        const pCount = document.getElementById('select-players-count').value;
-        const tCount = document.getElementById('select-teams-count').value;
+        const pCount = parseInt(document.getElementById('select-players-count').value);
+        const tCount = parseInt(document.getElementById('select-teams-count').value);
         const container = document.getElementById('player-inputs');
-        container.innerHTML = '<label>Oyuncu İsimleri ve Takımları</label>';
+        container.innerHTML = '<label>Oyuncu ve Takım Ataması</label>';
+        
         for(let i=1; i<=pCount; i++) {
+            const defaultTeam = ((i-1) % tCount) + 1; // Otomatik dengeli dağıtım
             let teamOptions = "";
             for(let t=1; t<=tCount; t++) {
-                let selected = (i % tCount == t % tCount) ? "selected" : "";
-                teamOptions += `<option value="${t}" ${selected}>${t}. Takım</option>`;
+                teamOptions += `<option value="${t}" ${t === defaultTeam ? 'selected' : ''}>Takım ${t}</option>`;
             }
             container.innerHTML += `
                 <div class="player-row">
                     <input type="text" id="p-name-${i}" value="Oyuncu ${i}">
-                    <select id="p-team-${i}" style="width:120px;">${teamOptions}</select>
+                    <select id="p-team-${i}" style="width:110px;">${teamOptions}</select>
                 </div>`;
         }
     }
     generatePlayerInputs();
 
     function initGame() {
-        audioCtx.resume(); // Ses motorunu aktif et
+        audioCtx.resume();
         const pCount = parseInt(document.getElementById('select-players-count').value);
         config.teams = parseInt(document.getElementById('select-teams-count').value);
         config.time = parseInt(document.getElementById('select-time').value);
         config.players = [];
+        
         for(let i=1; i<=pCount; i++) {
-            config.players.push({
-                name: document.getElementById(`p-name-${i}`).value,
-                team: parseInt(document.getElementById(`p-team-${i}`).value)
+            config.players.push({ 
+                name: document.getElementById(`p-name-${i}`).value, 
+                team: parseInt(document.getElementById(`p-team-${i}`).value) 
             });
         }
+        
         for(let i=1; i<=config.teams; i++) scores[i] = 0;
-        const shuffled = [...wordsBase].sort(() => 0.5 - Math.random());
+        
+        const shuffled = [...finalWordsHavuzu].sort(() => 0.5 - Math.random());
         tempPlayerWords = [];
-        for(let i=0; i<pCount; i++) { tempPlayerWords.push(shuffled.slice(i*10, (i+1)*10)); }
+        for(let i=0; i<pCount; i++) { tempPlayerWords.push(shuffled.slice(i*15, (i+1)*15)); }
+        
         showScreen('screen-selection');
         startSelectionPhase();
     }
@@ -210,15 +230,14 @@
     function startSelectionPhase() {
         discardsLeft = 3;
         const listDiv = document.getElementById('word-selection-list');
-        const nextBtn = document.getElementById('btn-next-player');
-        document.getElementById('player-selection-title').innerText = config.players[selectionPlayerIdx].name + " seçim yapıyor...";
+        document.getElementById('player-selection-title').innerText = config.players[selectionPlayerIdx].name + " Eleme Yapıyor";
         document.getElementById('discard-count').innerText = discardsLeft;
-        nextBtn.style.display = 'none';
+        document.getElementById('btn-next-player').style.display = 'none';
         listDiv.innerHTML = '';
-        tempPlayerWords[selectionPlayerIdx].forEach((word, idx) => {
+        tempPlayerWords[selectionPlayerIdx].forEach((w, idx) => {
             const div = document.createElement('div');
             div.className = 'word-item';
-            div.innerHTML = `<span>${word}</span><button onclick="discardWord(${idx}, this)" style="background:var(--danger); color:white; padding:5px 12px; border-radius:5px;">ELE</button>`;
+            div.innerHTML = `<span>${w.text} (${w.point} P)</span><button onclick="discardWord(${idx}, this)" style="background:var(--danger); color:white; padding:6px 15px; border-radius:8px;">ELE</button>`;
             listDiv.appendChild(div);
         });
     }
@@ -227,8 +246,8 @@
         if(discardsLeft > 0) {
             tempPlayerWords[selectionPlayerIdx][idx] = null;
             discardsLeft--;
-            playSound('pass');
-            btn.parentElement.style.opacity = "0.2";
+            playSound(400);
+            btn.parentElement.style.opacity = "0.3";
             btn.parentElement.style.pointerEvents = "none";
             document.getElementById('discard-count').innerText = discardsLeft;
             if(discardsLeft === 0) document.getElementById('btn-next-player').style.display = 'block';
@@ -237,13 +256,11 @@
 
     function nextPlayerSelection() {
         selectionPlayerIdx++;
-        if(selectionPlayerIdx < config.players.length) {
-            startSelectionPhase();
-        } else {
+        if(selectionPlayerIdx < config.players.length) { startSelectionPhase(); }
+        else {
             masterDeck = [];
-            tempPlayerWords.forEach(pWords => { pWords.forEach(w => { if(w !== null) masterDeck.push(w); }); });
-            masterDeck.sort(() => 0.5 - Math.random());
-            playDeck = [...masterDeck];
+            tempPlayerWords.forEach(pWords => pWords.forEach(w => { if(w) masterDeck.push(w); }));
+            playDeck = [...masterDeck].sort(() => 0.5 - Math.random());
             showScreen('screen-play');
             updateUI();
         }
@@ -251,10 +268,13 @@
 
     function updateUI() {
         const scoreboard = document.getElementById('scoreboard-ui');
-        scoreboard.innerHTML = Object.keys(scores).map(t => `<div class="team-score"><span style="color:var(--accent)">T${t}</span><br><b>${scores[t]}</b></div>`).join('');
-        document.getElementById('current-player-name').innerText = config.players[currentPlayerIdx].name + ` (T${config.players[currentPlayerIdx].team})`;
-        document.getElementById('deck-info').innerText = `Kalan: ${playDeck.length} / ${masterDeck.length}`;
-        const banners = ["", "1. TUR: Serbest Anlatım", "2. TUR: Tek Kelime!", "3. TUR: Sessizce Anlat (MİM)"];
+        scoreboard.innerHTML = Object.keys(scores).map(t => `
+            <div class="team-score" style="border-bottom: 3px solid ${['','#3498db','#e67e22','#9b59b6','#e74c3c'][t]}">
+                T${t}<br><b>${scores[t]}</b>
+            </div>`).join('');
+        document.getElementById('current-player-name').innerText = config.players[currentPlayerIdx].name.toUpperCase() + " (TÜM TAKIM " + config.players[currentPlayerIdx].team + ")";
+        document.getElementById('deck-info').innerText = `Deste: ${playDeck.length} / ${masterDeck.length}`;
+        const banners = ["", "1. TUR: SERBEST", "2. TUR: TEK KELİME", "3. TUR: SESSİZ SİNEMA"];
         document.getElementById('round-instruction').innerText = banners[config.currentRound];
     }
 
@@ -268,33 +288,38 @@
         timerObj = setInterval(() => {
             timeLeft--;
             document.getElementById('timer-display').innerText = timeLeft;
-            if(timeLeft <= 0) { playSound('timeup'); endTurn(); }
+            if(timeLeft <= 0) { playSound(200); endTurn(); }
         }, 1000);
     }
 
     function showWord() {
-        if(playDeck.length === 0) { endTurn(); return; }
-        document.getElementById('current-word').innerText = playDeck[0];
+        if(playDeck.length === 0) {
+            document.getElementById('current-word').innerText = "DESTE BİTTİ!";
+            return;
+        }
+        document.getElementById('current-word').innerText = playDeck[0].text;
+        document.getElementById('word-points').innerText = playDeck[0].point + " Puan";
     }
 
     function handleCorrect() {
-        playSound('correct');
-        scores[config.players[currentPlayerIdx].team]++;
+        playSound(800);
+        scores[config.players[currentPlayerIdx].team] += playDeck[0].point;
         playDeck.shift();
         updateUI();
-        if(playDeck.length === 0) { endTurn(); setTimeout(nextRound, 500); }
+        if(playDeck.length === 0) { endTurn(); setTimeout(nextRound, 600); }
         else { showWord(); }
     }
 
     function handlePass() {
-        playSound('pass');
-        const word = playDeck.shift();
-        playDeck.push(word);
+        playSound(300);
+        const item = playDeck.shift();
+        playDeck.push(item);
         showWord();
     }
 
     function endTurn() {
         clearInterval(timerObj);
+        if(playDeck.length > 0) { const itm = playDeck.shift(); playDeck.push(itm); }
         document.getElementById('ready-zone').classList.remove('hidden');
         document.getElementById('play-zone').classList.add('hidden');
         currentPlayerIdx = (currentPlayerIdx + 1) % config.players.length;
@@ -306,17 +331,15 @@
             config.currentRound++;
             playDeck = [...masterDeck].sort(() => 0.5 - Math.random());
             updateUI();
-            alert(`TUR BİTTİ!\nYeni Kural: ${document.getElementById('round-instruction').innerText}`);
-        } else {
-            endGame();
-        }
+            alert(`TEBRİKLER! ${config.currentRound}. Tur Başlıyor! Hazırlanın.`);
+        } else { endGame(); }
     }
 
     function endGame() {
         showScreen('screen-result');
         let results = Object.entries(scores).sort((a,b) => b[1] - a[1]);
         let txt = `🏆 ŞAMPİYON: TAKIM ${results[0][0]}<br><br>`;
-        results.forEach(([t, s]) => { txt += `Takım ${t}: ${s} Puan<br>`; });
+        results.forEach(([t, s]) => { txt += `<div style="font-size:1.1rem">Takım ${t}: ${s} Puan</div>`; });
         document.getElementById('winner-text').innerHTML = txt;
     }
 
